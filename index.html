@@ -166,42 +166,81 @@
   .copy .liquid { margin-top: 40px; font-size: 20px; }
 
 
-  /* ---------- Register pop-up: the form opens on this page ---------- */
-  .form-modal {
-    position: fixed; inset: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: center; padding: 24px;
-    background: rgba(13,12,26,.45);
-    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-    opacity: 0; visibility: hidden; transition: opacity .25s, visibility 0s .25s;
+  /* ---------- Zucchy AI chat: messages go to the n8n webhook ---------- */
+  .chat-launch {
+    position: fixed; right: 24px; bottom: 24px; z-index: 90;
+    width: 64px; height: 64px; border-radius: 50%; border: 0; cursor: pointer;
+    background: var(--ink); display: grid; place-items: center;
+    box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgba(138,99,255,.55), 0 16px 36px rgba(13,12,26,.3);
+    transition: transform .25s ease, opacity .25s, visibility 0s;
+    animation: launch-glow 3s ease-in-out infinite;
   }
-  .form-modal.open { opacity: 1; visibility: visible; transition: opacity .25s; }
-  .form-box {
-    position: relative; display: flex; flex-direction: column;
-    width: min(820px, 100%); height: min(90vh, 920px);
-    background: #f5f5f7; border-radius: 32px; overflow: hidden;
-    box-shadow: 0 1px 0 #fff inset, 0 40px 100px rgba(13,12,26,.35);
-    transform: translateY(16px) scale(.98); transition: transform .3s ease;
+  .chat-launch:hover { transform: scale(1.07); }
+  @keyframes launch-glow { 50% { box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgba(79,195,255,.6), 0 16px 36px rgba(13,12,26,.3); } }
+  .cl-face { display: flex; gap: 9px; }
+  .cl-face i { width: 11px; height: 15px; border-radius: 5px; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,.6); animation: blink 5s infinite; }
+  .chat-launch-tip { position: absolute; right: 76px; top: 50%; transform: translateY(-50%); white-space: nowrap; padding: 8px 14px; border-radius: 999px; background: #fff; color: var(--ink); font: 500 14px/1 "Outfit", sans-serif; box-shadow: 0 8px 24px rgba(13,12,26,.12); opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .chat-launch:hover .chat-launch-tip { opacity: 1; }
+  body.chat-open .chat-launch { opacity: 0; visibility: hidden; transform: scale(.6); transition: transform .25s ease, opacity .25s, visibility 0s .25s; }
+
+  .chat {
+    position: fixed; right: 24px; bottom: 24px; z-index: 100;
+    width: 400px; height: min(660px, calc(100vh - 48px));
+    display: flex; flex-direction: column;
+    background: rgba(246,246,249,.96);
+    -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,255,255,.9); border-radius: 30px;
+    box-shadow: 0 1px 0 #fff inset, 0 40px 100px rgba(13,12,26,.28);
+    transform-origin: bottom right;
+    opacity: 0; visibility: hidden; transform: translateY(16px) scale(.96);
+    transition: opacity .25s, transform .3s ease, visibility 0s .3s;
   }
-  .form-modal.open .form-box { transform: none; }
-  .form-bar { display: flex; align-items: center; gap: 12px; padding: 14px 16px 14px 20px; }
-  .form-bar .logo-mark { width: 44px; height: 28px; border-radius: 11px; flex: none; }
-  .form-bar .logo-mark::before { border-radius: 14px; }
-  .form-bar .logo-mark span { top: 7px; width: 9px; height: 13px; }
-  .form-bar .logo-mark span:nth-child(1) { left: 11px; } .form-bar .logo-mark span:nth-child(2) { right: 11px; }
-  .form-title { font-size: 18px; font-weight: 600; letter-spacing: -.3px; }
-  .form-bar a { margin-left: auto; color: #5d4fd6; font-size: 14px; font-weight: 500; text-decoration: none; white-space: nowrap; }
-  .form-bar a:hover { text-decoration: underline; }
-  .form-close { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 0; background: #e6e6ea; cursor: pointer; font-size: 22px; line-height: 1; color: var(--ink); }
-  .form-close:hover { background: #dcdce2; }
-  .form-body { position: relative; flex: 1; margin: 0 10px 10px; border-radius: 24px; overflow: hidden; background: #111827; }
-  .form-loading { position: absolute; inset: 0; display: grid; place-items: center; color: #9ca3af; font-size: 15px; }
-  .form-body iframe { position: relative; width: 100%; height: 100%; border: 0; background: transparent; }
-  @media (max-width: 780px) {
-    .form-modal { padding: 0; }
-    .form-box { width: 100%; height: 100%; border-radius: 0; }
-    .form-bar a { display: none; }
-    .form-close { margin-left: auto; }
-    .form-body { margin: 0; border-radius: 0; }
+  .chat.open { opacity: 1; visibility: visible; transform: none; transition: opacity .25s, transform .3s ease; }
+
+  .chat-head { display: flex; align-items: center; gap: 12px; padding: 16px 14px 14px 18px; border-bottom: 1px solid rgba(13,12,26,.07); }
+  .chat-avatar { position: relative; flex: none; width: 46px; height: 46px; border-radius: 50%; background: var(--ink); display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(138,99,255,.5); }
+  .chat-avatar span { width: 8px; height: 12px; border-radius: 4px; background: #fff; }
+  .chat-avatar::after { content: ""; position: absolute; right: -1px; bottom: -1px; width: 12px; height: 12px; border-radius: 50%; background: #22c55e; border: 2px solid #f6f6f9; }
+  .chat-head strong { display: block; font-size: 18px; font-weight: 600; letter-spacing: -.3px; }
+  .chat-head small { display: block; margin-top: 2px; font-size: 13px; color: var(--muted); }
+  .chat-icon { flex: none; width: 38px; height: 38px; border-radius: 50%; border: 0; background: transparent; cursor: pointer; color: #55556a; display: grid; place-items: center; transition: background .2s; }
+  .chat-icon:hover { background: rgba(13,12,26,.07); color: var(--ink); }
+  .chat-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  #chatReset { margin-left: auto; }
+
+  .chat-log { flex: 1; overflow-y: auto; padding: 18px 16px 8px; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; }
+  .msg { max-width: 84%; padding: 11px 15px; border-radius: 20px; font-size: 15.5px; line-height: 1.5; word-wrap: break-word; animation: msg-in .25s ease both; }
+  @keyframes msg-in { from { opacity: 0; transform: translateY(6px); } }
+  .msg.ai { align-self: flex-start; background: #fff; border-bottom-left-radius: 6px; box-shadow: 0 2px 10px rgba(13,12,26,.05); }
+  .msg.me { align-self: flex-end; background: var(--ink); color: #fff; border-bottom-right-radius: 6px; white-space: pre-wrap; }
+  .msg.ai a { color: #5d4fd6; }
+  .msg.ai ul { margin: 6px 0 2px 18px; }
+  .msg.ai p + p { margin-top: 8px; }
+  .msg.error { background: #fff4f4; color: #8a1c1c; }
+  .msg .retry { display: inline-block; margin-top: 8px; font: inherit; font-size: 14px; font-weight: 600; color: var(--ink); background: #fff; border: 1px solid rgba(13,12,26,.15); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+  .typing { display: flex; gap: 5px; padding: 15px 16px; }
+  .typing i { width: 8px; height: 8px; border-radius: 50%; background: #a3a3b5; animation: typing 1.2s infinite ease-in-out; }
+  .typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+  @keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-5px); opacity: 1; } }
+
+  .chat-quick { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 16px 10px; }
+  .chat-quick button { font: inherit; font-size: 14px; font-weight: 500; padding: 8px 14px; border-radius: 999px; cursor: pointer; color: #3c3c48; background: #fff; border: 1px solid rgba(123,92,255,.3); transition: background .2s, border-color .2s; }
+  .chat-quick button:hover { background: rgba(123,92,255,.08); border-color: rgba(123,92,255,.6); }
+
+  .chat-input { display: flex; align-items: flex-end; gap: 8px; margin: 0 12px; padding: 8px 8px 8px 16px; background: #fff; border-radius: 24px; border: 1px solid rgba(13,12,26,.1); box-shadow: 0 4px 16px rgba(13,12,26,.05); }
+  .chat-input:focus-within { border-color: rgba(123,92,255,.6); }
+  .chat-input textarea { flex: 1; resize: none; border: 0; outline: 0; background: transparent; font: inherit; font-size: 16px; line-height: 1.45; color: var(--ink); max-height: 120px; padding: 7px 0; }
+  .chat-send { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer; background: var(--grad); display: grid; place-items: center; transition: transform .2s, opacity .2s; }
+  .chat-send:hover { transform: scale(1.06); }
+  .chat-send:disabled { opacity: .4; cursor: default; transform: none; }
+  .chat-send svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .chat-foot { padding: 8px 16px 12px; text-align: center; font-size: 12px; color: var(--muted); }
+
+  @media (max-width: 600px) {
+    .chat { right: 0; bottom: 0; width: 100%; height: 100%; height: 100dvh; border-radius: 0; border: 0; }
+    .chat-launch { right: 16px; bottom: 16px; width: 58px; height: 58px; }
+    .chat-launch-tip { display: none; }
+    body.chat-open { overflow: hidden; }
   }
 
   .menu-toggle { display: none; }
@@ -655,7 +694,7 @@
           <li><a href="#instructors" data-route="instructors">Our Instructors</a></li>
         </ul>
       </nav>
-      <a class="liquid sm" href="https://forms.fillout.com/t/r6F7bSjmqeus" target="_blank" rel="noopener"><span>Register Here</span></a>
+      <a class="liquid sm" href="#chat"><span>Register Here</span></a>
       <a href="#" data-route="home" class="home-quick" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg></a>
       <button class="menu-toggle" id="menuToggle" aria-label="Menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
@@ -666,7 +705,7 @@
       <section class="copy">
         <h1 class="guard" data-grid-avoid>Hey, I’m Zucchy AI.<br><span class="grad">Your gym. Your rules.</span><br>Do it all here.</h1>
         <p class="lede guard" data-grid-avoid>Plan workouts, count every rep, fix your form, fuel your gains. Whatever you want to crush, this is your place, and I’ll spot you all the way.</p>
-        <a class="liquid" id="adopt" href="https://forms.fillout.com/t/r6F7bSjmqeus" target="_blank" rel="noopener"><span>Register Here
+        <a class="liquid" id="adopt" href="#chat"><span>Register Here
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 11L11 5M6 5h5v5"/></svg>
         </span></a>
       </section>
@@ -707,7 +746,7 @@
             <span class="chip">Strength</span><span class="chip">Cardio</span><span class="chip">Machines</span><span class="chip">Combat</span><span class="chip">Recovery</span>
           </div>
           <div class="hero-actions">
-            <a class="liquid" href="https://forms.fillout.com/t/r6F7bSjmqeus" target="_blank" rel="noopener"><span>Register Here <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 11L11 5M6 5h5v5"/></svg></span></a>
+            <a class="liquid" href="#chat"><span>Register Here <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 11L11 5M6 5h5v5"/></svg></span></a>
             <button class="text-link" data-scroll="zones">Explore the floor ↓</button>
           </div>
         </div>
@@ -783,7 +822,7 @@
 
       <div class="cta glass">
         <div><h2>Come see it for yourself.</h2><p>Register today and we’ll show you around the floor.</p></div>
-        <a class="liquid" href="https://forms.fillout.com/t/r6F7bSjmqeus" target="_blank" rel="noopener"><span>Register Here <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 11L11 5M6 5h5v5"/></svg></span></a>
+        <a class="liquid" href="#chat"><span>Register Here <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 11L11 5M6 5h5v5"/></svg></span></a>
       </div>
       <footer class="site-foot">
         <a class="logo" href="#" data-route="home" aria-label="Zucchy AI home"><div class="logo-mark"><span></span><span></span></div><div class="logo-text">zucchy<i>ai</i></div></a>
@@ -871,7 +910,7 @@
 
       <div class="cta glass">
         <div><h2>Ready to put this into practice?</h2><p>Register and get a plan built around these habits.</p></div>
-        <a class="liquid" href="https://forms.fillout.com/t/r6F7bSjmqeus" target="_blank" rel="noopener"><span>Register Here <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 11L11 5M6 5h5v5"/></svg></span></a>
+        <a class="liquid" href="#chat"><span>Register Here <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 11L11 5M6 5h5v5"/></svg></span></a>
       </div>
       <footer class="site-foot">
         <a class="logo" href="#" data-route="home" aria-label="Zucchy AI home"><div class="logo-mark"><span></span><span></span></div><div class="logo-text">zucchy<i>ai</i></div></a>
@@ -934,7 +973,7 @@
               <span class="ico big"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></span>
               <h3>Your story could be next.</h3>
               <p>Every story on this page started with one form and one first session.</p>
-              <a class="liquid sm" href="https://forms.fillout.com/t/r6F7bSjmqeus" target="_blank" rel="noopener"><span>Register Here</span></a>
+              <a class="liquid sm" href="#chat"><span>Register Here</span></a>
             </div>
           </article>
         </div>
@@ -955,7 +994,7 @@
 
       <div class="cta glass">
         <div><h2>Your story starts here.</h2><p>Register today and take the first step.</p></div>
-        <a class="liquid" href="https://forms.fillout.com/t/r6F7bSjmqeus" target="_blank" rel="noopener"><span>Register Here <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 11L11 5M6 5h5v5"/></svg></span></a>
+        <a class="liquid" href="#chat"><span>Register Here <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 11L11 5M6 5h5v5"/></svg></span></a>
       </div>
       <footer class="site-foot">
         <a class="logo" href="#" data-route="home" aria-label="Zucchy AI home"><div class="logo-mark"><span></span><span></span></div><div class="logo-text">zucchy<i>ai</i></div></a>
@@ -984,7 +1023,7 @@
               <div class="chip-row sm"><span class="chip">Strength</span><span class="chip">Hypertrophy</span><span class="chip">Powerlifting</span></div>
               <p>Builds simple, progressive strength plans and is obsessed with clean technique on the big lifts.</p>
               <div class="coach-meta"><span>8 years coaching</span><span>Certified PT</span></div>
-              <a class="liquid sm" href="https://forms.fillout.com/t/r6F7bSjmqeus" target="_blank" rel="noopener"><span>Book a session</span></a>
+              <a class="liquid sm" href="#chat"><span>Book a session</span></a>
             </div>
           </article>
           <article class="glass coach">
@@ -994,7 +1033,7 @@
               <div class="chip-row sm"><span class="chip">Squat technique</span><span class="chip">Mobility</span><span class="chip">Women’s strength</span></div>
               <p>Helps members move better and lift heavier, with a special focus on squats and hip mobility.</p>
               <div class="coach-meta"><span>6 years coaching</span><span>Certified PT</span></div>
-              <a class="liquid sm" href="https://forms.fillout.com/t/r6F7bSjmqeus" target="_blank" rel="noopener"><span>Book a session</span></a>
+              <a class="liquid sm" href="#chat"><span>Book a session</span></a>
             </div>
           </article>
           <article class="glass coach">
@@ -1004,7 +1043,7 @@
               <div class="chip-row sm"><span class="chip">HIIT</span><span class="chip">Fat loss</span><span class="chip">Nutrition habits</span></div>
               <p>Mixes smart conditioning with sensible eating habits, so members lose fat without losing muscle.</p>
               <div class="coach-meta"><span>5 years coaching</span><span>Nutrition coach</span></div>
-              <a class="liquid sm" href="https://forms.fillout.com/t/r6F7bSjmqeus" target="_blank" rel="noopener"><span>Book a session</span></a>
+              <a class="liquid sm" href="#chat"><span>Book a session</span></a>
             </div>
           </article>
           <article class="glass coach">
@@ -1014,7 +1053,7 @@
               <div class="chip-row sm"><span class="chip">Core strength</span><span class="chip">Pilates</span><span class="chip">Posture</span></div>
               <p>Her sessions build a strong, stable core that carries over to every other lift and everyday life.</p>
               <div class="coach-meta"><span>7 years coaching</span><span>Pilates instructor</span></div>
-              <a class="liquid sm" href="https://forms.fillout.com/t/r6F7bSjmqeus" target="_blank" rel="noopener"><span>Book a session</span></a>
+              <a class="liquid sm" href="#chat"><span>Book a session</span></a>
             </div>
           </article>
         </div>
@@ -1034,7 +1073,7 @@
 
       <div class="cta glass">
         <div><h2>Not sure who to pick?</h2><p>Tell us your goal when you register and we’ll match you with the right coach.</p></div>
-        <a class="liquid" href="https://forms.fillout.com/t/r6F7bSjmqeus" target="_blank" rel="noopener"><span>Register Here <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 11L11 5M6 5h5v5"/></svg></span></a>
+        <a class="liquid" href="#chat"><span>Register Here <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 11L11 5M6 5h5v5"/></svg></span></a>
       </div>
       <footer class="site-foot">
         <a class="logo" href="#" data-route="home" aria-label="Zucchy AI home"><div class="logo-mark"><span></span><span></span></div><div class="logo-text">zucchy<i>ai</i></div></a>
@@ -1046,20 +1085,31 @@
   </div>
 </div>
 
-<div class="form-modal" id="formModal" role="dialog" aria-modal="true" aria-labelledby="formTitle" aria-hidden="true">
-  <div class="form-box">
-    <div class="form-bar">
-      <div class="logo-mark" aria-hidden="true"><span></span><span></span></div>
-      <span class="form-title" id="formTitle">Register with Zucchy AI</span>
-      <a href="https://forms.fillout.com/t/r6F7bSjmqeus" target="_blank" rel="noopener">Open in new tab ↗</a>
-      <button class="form-close" id="formClose" aria-label="Close">×</button>
-    </div>
-    <div class="form-body">
-      <div class="form-loading" id="formLoading">Loading form…</div>
-      <iframe id="formFrame" title="Registration form" allow="clipboard-write"></iframe>
-    </div>
+<button class="chat-launch" id="chatLaunch" aria-label="Chat with Zucchy AI" aria-controls="chat" aria-expanded="false">
+  <span class="cl-face" aria-hidden="true"><i></i><i></i></span>
+  <span class="chat-launch-tip">Chat with Zucchy AI</span>
+</button>
+
+<section class="chat" id="chat" role="dialog" aria-labelledby="chatTitle" aria-hidden="true">
+  <div class="chat-head">
+    <div class="chat-avatar" aria-hidden="true"><span></span><span></span></div>
+    <div><strong id="chatTitle">Zucchy AI</strong><small id="chatStatus">Ask me anything, or sign up here</small></div>
+    <button class="chat-icon" id="chatReset" title="Start a new chat" aria-label="Start a new chat"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+    <button class="chat-icon" id="chatClose" title="Close" aria-label="Close chat"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
   </div>
-</div>
+  <div class="chat-log" id="chatLog" role="log" aria-live="polite"></div>
+  <div class="chat-quick" id="chatQuick">
+    <button type="button">I want to register</button>
+    <button type="button">Book a session with a coach</button>
+    <button type="button">Tell me about the gym</button>
+    <button type="button">Membership options</button>
+  </div>
+  <form class="chat-input" id="chatForm">
+    <textarea id="chatText" rows="1" placeholder="Type your message…" aria-label="Your message" maxlength="2000"></textarea>
+    <button type="submit" class="chat-send" id="chatSend" aria-label="Send message" disabled><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+  </form>
+  <p class="chat-foot">Your messages are sent to the Zucchy AI team.</p>
+</section>
 <script>
   // Your own gym photos, embedded so they always load
   const PHOTOS = {
@@ -1135,37 +1185,6 @@
 
   document.getElementById('menuToggle').onclick = () => document.getElementById('page').classList.toggle('open');
 
-  // Register buttons: open the form in a pop-up on this page.
-  // Ctrl/Cmd/Shift-click still opens it in a new tab, and so does the link inside the pop-up.
-  const FORM_URL = 'https://forms.fillout.com/t/r6F7bSjmqeus';
-  const modal = document.getElementById('formModal');
-  const frame = document.getElementById('formFrame');
-  const loading = document.getElementById('formLoading');
-  let lastFocus = null;
-  frame.addEventListener('load', () => { if (frame.src) loading.hidden = true; });
-  function openFormModal() {
-    if (!frame.src) frame.src = FORM_URL;
-    lastFocus = document.activeElement;
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    document.getElementById('formClose').focus();
-  }
-  function closeFormModal() {
-    if (!modal.classList.contains('open')) return;
-    modal.classList.remove('open');
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-    if (lastFocus) lastFocus.focus();
-  }
-  document.querySelectorAll('a.liquid').forEach(a => a.addEventListener('click', e => {
-    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
-    e.preventDefault();
-    openFormModal();
-  }));
-  document.getElementById('formClose').onclick = closeFormModal;
-  modal.addEventListener('click', e => { if (e.target === modal) closeFormModal(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFormModal(); });
 
   // ---------- Grid pulse: cells light where the pointer passes, a few light on their own ----------
   function gridPulse(el, { cell = 24, reach = 2.6, ambient = 2, maxLit = 180, avoid = '[data-grid-avoid]' } = {}) {
@@ -1390,6 +1409,209 @@
   }
   function qRestart() { clearInterval(qTimer); qTimer = setInterval(() => setQuote((qi + 1) % QUOTES.length), 5000); }
   [...quoteDots.children][0].classList.add('on'); qRestart();
+
+  // ---------- Zucchy AI chat ----------
+  // Every message is POSTed to the n8n webhook below. Whatever the workflow sends back
+  // (JSON such as {"output": "..."} or plain text) is shown as Zucchy AI's reply.
+  const WEBHOOK_URL = 'https://teamyy.app.n8n.cloud/webhook/069ba507-c5b7-4f58-bf4f-13ac1177679e';
+  const GREETING = 'Hey, I’m Zucchy AI 👋 Ready to join? Tell me your name and your fitness goal and I’ll get you registered. You can also ask me about the gym, our coaches or classes.';
+  const SENT_NO_REPLY = 'Thanks! Your message has been sent to the Zucchy AI team. We’ll get back to you soon.';
+  const FAILED = 'Sorry, I couldn’t send that just now. Please check your connection and try again.';
+
+  const chat = document.getElementById('chat');
+  const chatLog = document.getElementById('chatLog');
+  const chatForm = document.getElementById('chatForm');
+  const chatText = document.getElementById('chatText');
+  const chatSend = document.getElementById('chatSend');
+  const chatQuick = document.getElementById('chatQuick');
+  const chatStatus = document.getElementById('chatStatus');
+  const chatLaunch = document.getElementById('chatLaunch');
+  const statusIdle = chatStatus.textContent;
+  let busy = false, lastFocus = null;
+
+  // browser storage can be blocked (private windows, previews), so every read and write is guarded
+  const store = {
+    get(area, key) { try { return window[area].getItem(key); } catch (e) { return null; } },
+    set(area, key, v) { try { window[area].setItem(key, v); } catch (e) {} },
+    del(area, key) { try { window[area].removeItem(key); } catch (e) {} },
+  };
+  const newId = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'zc-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  // one id per visitor, so the n8n workflow can keep the conversation's memory together
+  let sessionId = store.get('localStorage', 'zucchy-chat-session');
+  if (!sessionId) { sessionId = newId(); store.set('localStorage', 'zucchy-chat-session', sessionId); }
+  let chatHistory = [];
+  try { chatHistory = JSON.parse(store.get('sessionStorage', 'zucchy-chat-log') || '[]'); } catch (e) { chatHistory = []; }
+
+  // Light, safe formatting for replies: escape everything first, then allow bold, italics, links and bullet lists
+  const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  function format(text) {
+    let h = esc(text.trim());
+    h = h.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    h = h.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>');
+    h = h.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+    const out = []; let list = null;
+    for (const line of h.split('\n')) {
+      const bullet = line.match(/^\s*(?:[-*•])\s+(.*)$/);
+      if (bullet) { if (!list) { list = []; out.push(list); } list.push(bullet[1]); continue; }
+      list = null;
+      if (line.trim()) out.push(line);
+    }
+    return out.map(x => Array.isArray(x) ? '<ul>' + x.map(li => '<li>' + li + '</li>').join('') + '</ul>' : '<p>' + x + '</p>').join('');
+  }
+
+  function addBubble(from, text, opts = {}) {
+    const el = document.createElement('div');
+    el.className = 'msg ' + (from === 'me' ? 'me' : 'ai') + (opts.error ? ' error' : '');
+    if (from === 'me') el.textContent = text; else el.innerHTML = format(text);
+    if (opts.retry) {
+      const b = document.createElement('button');
+      b.className = 'retry'; b.type = 'button'; b.textContent = 'Try again';
+      b.onclick = () => { el.remove(); send(opts.retry, { resend: true }); };
+      el.appendChild(b);
+    }
+    chatLog.appendChild(el);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return el;
+  }
+  function remember(from, text) {
+    chatHistory.push({ from, text });
+    store.set('sessionStorage', 'zucchy-chat-log', JSON.stringify(chatHistory.slice(-60)));
+  }
+  function renderHistory() {
+    chatLog.innerHTML = '';
+    addBubble('bot', GREETING);
+    chatHistory.forEach(m => addBubble(m.from, m.text));
+    chatQuick.hidden = chatHistory.some(m => m.from === 'me');
+  }
+
+  // Pull the reply text out of whatever the webhook returns
+  function pickReply(data) {
+    if (data == null) return '';
+    if (typeof data === 'string') return data;
+    if (typeof data === 'number') return String(data);
+    if (Array.isArray(data)) { for (const d of data) { const r = pickReply(d); if (r) return r; } return ''; }
+    if (typeof data === 'object') {
+      for (const k of ['output', 'reply', 'response', 'answer', 'text', 'message', 'content', 'result', 'data', 'json', 'body']) {
+        if (k in data) { const r = pickReply(data[k]); if (r) return r; }
+      }
+    }
+    return '';
+  }
+  function readReply(raw) {
+    if (!raw || !raw.trim()) return '';
+    let reply;
+    try { reply = pickReply(JSON.parse(raw)); } catch (e) { reply = raw; }
+    reply = String(reply || '').trim();
+    // n8n's default answer when a workflow doesn't send anything back
+    if (/^workflow (was )?started$/i.test(reply)) return '';
+    return reply;
+  }
+
+  function setBusy(on) {
+    busy = on;
+    chatStatus.textContent = on ? 'Typing…' : statusIdle;
+    chatSend.disabled = on || !chatText.value.trim();
+  }
+
+  async function send(text, { resend = false } = {}) {
+    text = text.trim();
+    if (!text || busy) return;
+    if (!resend) { addBubble('me', text); remember('me', text); }
+    chatQuick.hidden = true;
+    setBusy(true);
+    const typing = document.createElement('div');
+    typing.className = 'msg ai typing'; typing.setAttribute('aria-label', 'Zucchy AI is typing');
+    typing.innerHTML = '<i></i><i></i><i></i>';
+    chatLog.appendChild(typing); chatLog.scrollTop = chatLog.scrollHeight;
+
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 90000); // AI workflows can take a while
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'sendMessage',
+          sessionId,
+          chatInput: text,
+          message: text,
+          page: location.hash.replace('#', '') || 'home',
+          source: 'zucchy-ai-website',
+          sentAt: new Date().toISOString(),
+        }),
+        signal: ctrl.signal,
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const reply = readReply(await res.text()) || SENT_NO_REPLY;
+      typing.remove();
+      addBubble('bot', reply); remember('bot', reply);
+    } catch (err) {
+      typing.remove();
+      addBubble('bot', FAILED, { error: true, retry: text });
+    } finally {
+      clearTimeout(timer);
+      setBusy(false);
+    }
+  }
+
+  function openChat(prefill) {
+    if (!chat.classList.contains('open')) lastFocus = document.activeElement;
+    chat.classList.add('open');
+    chat.setAttribute('aria-hidden', 'false');
+    chatLaunch.setAttribute('aria-expanded', 'true');
+    document.body.classList.add('chat-open');
+    if (prefill && !chatText.value.trim()) { chatText.value = prefill; autoGrow(); }
+    setBusy(busy);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    setTimeout(() => chatText.focus(), 60);
+  }
+  function closeChat() {
+    if (!chat.classList.contains('open')) return;
+    chat.classList.remove('open');
+    chat.setAttribute('aria-hidden', 'true');
+    chatLaunch.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('chat-open');
+    if (lastFocus && lastFocus !== document.body) lastFocus.focus();
+  }
+
+  function autoGrow() { chatText.style.height = 'auto'; chatText.style.height = Math.min(chatText.scrollHeight, 120) + 'px'; }
+  chatText.addEventListener('input', () => { autoGrow(); chatSend.disabled = busy || !chatText.value.trim(); });
+  chatText.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); chatForm.requestSubmit ? chatForm.requestSubmit() : chatForm.dispatchEvent(new Event('submit')); }
+  });
+  chatForm.addEventListener('submit', e => {
+    e.preventDefault();
+    if (busy) return;
+    const t = chatText.value; chatText.value = ''; autoGrow();
+    send(t);
+  });
+  chatQuick.querySelectorAll('button').forEach(b => b.addEventListener('click', () => send(b.textContent)));
+  document.getElementById('chatClose').onclick = closeChat;
+  document.getElementById('chatReset').onclick = () => {
+    if (busy) return;
+    chatHistory = []; store.del('sessionStorage', 'zucchy-chat-log');
+    sessionId = newId(); store.set('localStorage', 'zucchy-chat-session', sessionId);
+    chatText.value = ''; autoGrow();
+    renderHistory(); chatText.focus();
+  };
+  chatLaunch.onclick = () => openChat();
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChat(); });
+
+  // Register Here opens the chat; Book a session also fills in the coach's name
+  document.querySelectorAll('a.liquid').forEach(a => a.addEventListener('click', e => {
+    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+    e.preventDefault();
+    const coach = a.closest('.coach');
+    openChat(coach ? `Hi! I’d like to book a session with ${coach.querySelector('h3').textContent}.` : '');
+  }));
+  // tap the robot to chat with it
+  bot.title = 'Chat with me';
+  bot.style.cursor = 'pointer';
+  bot.addEventListener('click', () => setTimeout(() => openChat(), 350));
+  // a link to index.html#chat opens the chat straight away
+  if (location.hash === '#chat') { window.history.replaceState(null, '', location.pathname + location.search); openChat(); }
+
+  renderHistory();
 </script>
 </body>
 </html>
